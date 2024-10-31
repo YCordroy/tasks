@@ -1,0 +1,40 @@
+services:
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    command: uvicorn main:app --host=0.0.0.0 --port=8000 --workers=2
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/code/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app_network
+    env_file:
+      - ./.env
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  redis:
+    image: redis:latest
+    restart: always
+    networks:
+      - app_network
+networks:
+  app_network:
+
+volumes:
+  postgres_data:
